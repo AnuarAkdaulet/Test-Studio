@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конструктор Тестов с Перетаскиванием</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      margin-top: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      white-space: nowrap; /* предотвращает перенос текста на следующую строку */
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .draggable {
+      cursor: pointer;
+      padding: 5px;
+      border: 1px solid #999;
+      background-color: #fff;
+      margin: 5px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .droppable {
+      min-height: 40px;
+      border: 2px dashed #ccc;
+    }
+    #answersContainer {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+    #testCheckButton {
+      margin-top: 20px;
+    }
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Конструктор Тестов с Перетаскиванием</h2>
+    <button onclick="addRow()">Добавить Строку</button>
+    <button onclick="addColumn()">Добавить Столбец</button>
+    <button onclick="rememberTable()">Запомнить Позицию Таблицы</button>
+    <button onclick="createTest()">Создать Тест</button>
+
+    <div class="table-container">
+      <table id="dragDropTable">
+        <thead>
+          <tr id="headerRow">
+            <th contenteditable="true">Название Физической Величины <input type="checkbox" class="givenColumn"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="droppable" contenteditable="true"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="answersContainer">
+      <h3>Элементы для Перетаскивания</h3>
+      <div id="draggableItems"></div>
+    </div>
+    <button id="testCheckButton" onclick="checkTest()" style="display: none;">Проверить Тест</button>
+  </div>
+
+  <script>
+    let rememberedAnswers = [];
+
+    // Добавление строки в таблицу
+    function addRow() {
+      const table = document.getElementById('dragDropTable').getElementsByTagName('tbody')[0];
+      const newRow = table.insertRow();
+      const columnsCount = document.getElementById('headerRow').children.length;
+      for (let i = 0; i < columnsCount; i++) {
+        const newCell = newRow.insertCell();
+        newCell.classList.add('droppable');
+        newCell.setAttribute('contenteditable', 'true');
+      }
+      updateDroppables();
+    }
+
+    // Добавление столбца в таблицу
+    function addColumn() {
+      const headerRow = document.getElementById('headerRow');
+      const newHeaderCell = document.createElement('th');
+      newHeaderCell.setAttribute('contenteditable', 'true');
+      newHeaderCell.innerHTML = 'Новый Столбец <input type="checkbox" class="givenColumn">';
+      headerRow.appendChild(newHeaderCell);
+
+      const rows = document.querySelectorAll('#dragDropTable tbody tr');
+      rows.forEach(row => {
+        const newCell = row.insertCell();
+        newCell.classList.add('droppable');
+        newCell.setAttribute('contenteditable', 'true');
+      });
+      updateDroppables();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDroppables();
+    });
+
+    function updateDroppables() {
+      const droppables = document.querySelectorAll('.droppable');
+      droppables.forEach(droppable => {
+        droppable.addEventListener('dragover', dragOver);
+        droppable.addEventListener('drop', drop);
+      });
+    }
+
+    function dragStart(event) {
+      event.dataTransfer.setData('text', event.target.dataset.latex ? event.target.dataset.latex : event.target.innerHTML);
+    }
+
+    function dragOver(event) {
+      event.preventDefault();
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const data = event.dataTransfer.getData('text');
+      const dropTarget = event.target;
+
+      if (dropTarget.classList.contains('droppable') && dropTarget.childElementCount === 0) {
+        dropTarget.innerHTML = data;
+        MathJax.typesetPromise([dropTarget]).then(() => {
+          // Визуализация формулы после вставки
+        });
+      }
+    }
+
+    // Запоминание текущих значений как правильных и создание draggable элементов
+    function rememberTable() {
+    rememberedAnswers = [];
+    const rows = document.querySelectorAll('#dragDropTable tbody tr');
+    const answerContainer = document.getElementById('draggableItems');
+    answerContainer.innerHTML = '';
+
+    rows.forEach(row => {
+      let rowData = [];
+      row.querySelectorAll('td').forEach((cell, cellIndex) => {
+        const isGivenColumn = document.querySelectorAll('.givenColumn')[cellIndex]?.checked;
+        if (!isGivenColumn) {
+          const mathText = cell.innerText.trim();
+          rowData.push(mathText);
+
+          // Сохранение исходного LaTeX-контента в dataset ячейки
+          if (mathText.startsWith("\\(") && mathText.endsWith("\\)")) {
+            cell.dataset.latex = mathText; // Сохраняем исходный LaTeX
+          } else {
+            cell.dataset.latex = `\\(${mathText}\\)`;
+          }
+        }
+      });
+      rememberedAnswers.push(rowData);
+    });
+
+    // Создание draggable элементов
+    rememberedAnswers.flat().forEach(answer => {
+      if (answer !== '') {
+        const newAnswer = document.createElement('div');
+        newAnswer.classList.add('draggable');
+        newAnswer.setAttribute('draggable', 'true');
+        newAnswer.innerHTML = answer; // Отображаем текст
+        newAnswer.dataset.latex = answer; // Сохраняем оригинальный LaTeX в dataset
+        newAnswer.style.width = `${answer.length * 8 + 20}px`;
+        document.getElementById('draggableItems').appendChild(newAnswer);
+        newAnswer.addEventListener('dragstart', dragStart);
+      }
+    });
+
+    MathJax.typesetPromise(); // Визуализация формул после запоминания
+    alert("Текущая таблица запомнена как правильная позиция.");
+  }
+
+
+    // Создание теста на основе текущей таблицы
+    function createTest() {
+      const rows = document.querySelectorAll('#dragDropTable tbody tr');
+      rows.forEach((row, rowIndex) => {
+        row.querySelectorAll('td').forEach((cell, cellIndex) => {
+          const isGivenColumn = document.querySelectorAll('.givenColumn')[cellIndex]?.checked;
+          if (!isGivenColumn) {
+            cell.innerHTML = '';
+            cell.classList.add('droppable');
+          } else {
+            cell.classList.remove('droppable');
+          }
+        });
+      });
+
+      // Перемешивание элементов для перетаскивания
+      const draggableItems = Array.from(document.getElementById('draggableItems').children);
+      draggableItems.sort(() => Math.random() - 0.5);
+      document.getElementById('draggableItems').innerHTML = '';
+      draggableItems.forEach(item => document.getElementById('draggableItems').appendChild(item));
+
+      updateDroppables();
+      document.getElementById('testCheckButton').style.display = 'block';
+      MathJax.typeset(); // Визуализация формул после создания теста
+      alert("Тест создан. Теперь заполните пустые ячейки, перетаскивая ответы.");
+    }
+
+    // Проверка теста
+	// Проверка теста
+	function checkTest() {
+    let correct = true;
+    const rows = document.querySelectorAll('#dragDropTable tbody tr');
+    rows.forEach((row, rowIndex) => {
+      row.querySelectorAll('td').forEach((cell, cellIndex) => {
+        const isGivenColumn = document.querySelectorAll('.givenColumn')[cellIndex]?.checked;
+        if (!isGivenColumn) {
+          const expectedAnswer = rememberedAnswers[rowIndex][cellIndex];
+          const actualAnswer = cell.dataset.latex ? cell.dataset.latex.trim() : cell.innerText.trim();
+          
+          // Сравниваем ответы, оба должны быть в формате LaTeX
+          if (expectedAnswer !== actualAnswer) {
+            correct = false;
+            cell.style.backgroundColor = '#f8d7da'; // Красный фон для неверных ответов
+          } else {
+            cell.style.backgroundColor = '#d4edda'; // Зеленый фон для правильных ответов
+          }
+        }
+      });
+    });
+
+    if (correct) {
+      alert('Все ответы правильные!');
+    } else {
+      alert('Некоторые ответы неверны. Попробуйте снова.');
+    }
+  }
+     
+    // Функция для получения текста MathJax формулы из ячейки
+    function getMathJaxText(cell) {
+      const math = cell.querySelector('.MathJax');
+      return math ? math.getAttribute('data-mathml') || cell.innerText : cell.innerText;
+    }
+
+    // Функция для стандартизации содержимого (удаление лишних пробелов)
+    function standardizeContent(content) {
+      return content.replace(/\s+/g, ' ').trim();
+    }
+	<!-- Вставьте обновленный фрагмент кода в вашу функцию checkTest() -->
+
+  </script>
+</body>
+</html>
