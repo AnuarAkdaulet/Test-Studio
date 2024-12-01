@@ -1,0 +1,47 @@
+
+main {
+  flex: 1; /* This ensures that the main content area expands to fill the available space */
+  /*min-height: calc(100vh - 100px); /* Assuming your header + footer is 100px tall */
+
+}
+
+/* Ensure the footer stays at the bottom */
+footer {
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+
+header {
+  background-color: #333;
+  color: white;
+  padding: 10px 0;
+  text-align: center;
+}
+
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+ul li a {
+  color: white;
+  text-decoration: none;
+}
+/* Ensure the body and html take full height */
+html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+

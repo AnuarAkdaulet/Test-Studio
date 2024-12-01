@@ -1,0 +1,49 @@
+/* Styles for the table */
+.table-responsive {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 800px;
+  margin: 5px auto;
+}
+
+.table-responsive table {
+  border: 5px solid black !important; /* Make sure the table border is visible */
+}
+
+th, td {
+  border: 3px solid black !important; /* Ensure table cell borders are visible */
+}
+/* Ensure cells remain editable even after content loading */
+td {
+  contenteditable: true;
+}
+
+
+/* Draggable items */
+.draggable {
+  cursor: pointer;
+  padding: 5px;
+  border: 1px solid #999;
+  background-color: #fff;
+  margin: 5px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Droppable target areas */
+.droppable {
+  min-height: 40px;
+  border: 5px dashed #ccc;
+}
+
+/* Container for answers */
+#answersContainer {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Button styling */
+#testCheckButton {
+  margin-top: 20px;
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Page</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css"> <!-- Correct path to your CSS file -->
+  <link rel="stylesheet" href="css/teacher.css"> <!-- Correct path to your CSS file -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="loader.js" defer></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+ 
+</head>
+<body>
+  <div id="header-placeholder"></div> <!-- Header loaded here -->
+
+	<main class="container mt-4">
+    <h2>Конструктор Тестов с Перетаскиванием</h2>
+    <button onclick="addRow()">Добавить Строку</button>
+	<button onclick="deleteCurrentRow()">Удалить Строку</button>
+    <button onclick="addColumn()">Добавить Столбец</button>
+	<button onclick="deleteCurrentColumn()">Удалить Столбец</button>
+    <button onclick="rememberTable()">Запомнить Позицию Таблицы</button>
+    <button onclick="createTest()">Создать тест</button>
+    <button onclick="saveTest()">Сохранить Тест</button>
+    <button onclick="loadTest()">Загрузить Тест</button>
+
+    <div class="table-responsive">
+      <table id="dragDropTable" class="table table-bordered">
+        <thead class="thead-dark">
+          <tr id="headerRow">
+            <th contenteditable="true">Название Физической Величины <input type="checkbox" class="givenColumn"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td contenteditable="true" class="droppable"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="answersContainer" class="mt-4">
+      <h3>Элементы для Перетаскивания</h3>
+      <div id="draggableItems"></div>
+    </div>
+    <button id="testCheckButton" onclick="checkTest()" class="btn btn-success mt-3" style="display: none;">Проверить Тест</button>
+</main>
+
+
+  <!-- Include teacher-specific JavaScript -->
+<script src="js/teacher.js" defer></script>  <div id="footer-placeholder"></div> <!-- Footer loaded here -->
+
+</body>
+</html>
