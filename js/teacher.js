@@ -151,8 +151,6 @@ function drop(event) {
 }
 
 
-
-
 // Store table data and create draggable items
 function rememberTable() {
   rememberedAnswers = []; // Полная очистка массива с ответами
@@ -238,6 +236,13 @@ function rememberTable() {
   alert("Текущая таблица запомнена как правильная позиция.");
 }
 
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 // Create a test based on the current table
 function createTest() {
@@ -253,6 +258,7 @@ function createTest() {
   answerContainer.innerHTML = '';
 
   // Собираем ответы для перетаскивания и очищаем ячейки таблицы
+  let answers = [];
   rows.forEach((row, rowIndex) => {
     row.querySelectorAll('td').forEach((cell, cellIndex) => {
       const isGivenColumn = document.querySelectorAll('.givenColumn')[cellIndex]?.checked;
@@ -260,32 +266,50 @@ function createTest() {
       if (!isGivenColumn) {
         const mathText = cell.dataset.latex || cell.innerText.trim();
 
-        // Создаём перетаскиваемый элемент для каждого невыданного ответа
+        // Собираем все ответы в массив для перемешивания
         if (mathText !== '') {
-          const newAnswer = document.createElement('div');
-          newAnswer.classList.add('draggable');
-          newAnswer.setAttribute('draggable', 'true');
+          answers.push({
+            value: mathText,
+            isLatex: !!cell.dataset.latex,
+            type: cell.dataset.latex ? 'latex' : 'text',
+          });
 
-          // Определяем, является ли содержимое LaTeX или обычным текстом
-          if (cell.dataset.latex) {
-            newAnswer.innerHTML = cell.dataset.latex;
-            newAnswer.dataset.latex = cell.dataset.latex;
-          } else {
-            newAnswer.innerHTML = mathText;
-            delete newAnswer.dataset.latex; // Удаляем атрибут, если это текст
-          }
-
-          newAnswer.dataset.type = cell.dataset.latex ? 'latex' : 'text';
-          newAnswer.style.width = `${mathText.length * 8 + 20}px`;
-          answerContainer.appendChild(newAnswer);
-          newAnswer.addEventListener('dragstart', dragStart);
+          // Очищаем содержимое ячейки таблицы
+          cell.innerHTML = '';
+          delete cell.dataset.latex;
         }
-
-        // Очищаем содержимое ячейки таблицы, так как оно теперь должно быть пустым
-        cell.innerHTML = '';
-        delete cell.dataset.latex;
       }
     });
+  });
+
+  // Перемешиваем ответы
+  shuffleArray(answers);
+
+  // Создаем перетаскиваемые элементы из перемешанных ответов
+  answers.forEach(answer => {
+    const newAnswer = document.createElement('div');
+    newAnswer.classList.add('draggable');
+    newAnswer.setAttribute('draggable', 'true');
+
+    // Определяем, является ли содержимое LaTeX или обычным текстом
+    if (answer.isLatex) {
+      // Если уже есть \\( и \\), не добавляем повторно
+      if (!answer.value.startsWith('\\(') && !answer.value.endsWith('\\)')) {
+        newAnswer.innerHTML = `\\(${answer.value}\\)`;
+        newAnswer.dataset.latex = `\\(${answer.value}\\)`;
+      } else {
+        newAnswer.innerHTML = answer.value;
+        newAnswer.dataset.latex = answer.value;
+      }
+    } else {
+      newAnswer.innerHTML = answer.value;
+      delete newAnswer.dataset.latex; // Удаляем атрибут, если это текст
+    }
+
+    newAnswer.dataset.type = answer.type;
+    newAnswer.style.width = `${answer.value.length * 8 + 20}px`;
+    answerContainer.appendChild(newAnswer);
+    newAnswer.addEventListener('dragstart', dragStart);
   });
 
   // Рендеринг всех новых элементов с использованием MathJax для корректного отображения LaTeX
@@ -295,8 +319,6 @@ function createTest() {
 
   alert("Тест успешно создан. Перетаскиваемые элементы готовы.");
 }
-
-
 
 
 // Check the answers in the test
