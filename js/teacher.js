@@ -326,6 +326,8 @@ function checkTest() {
   console.log("Начало выполнения checkTest");
 
   let isCorrect = true;
+  let correctCount = 0; // Counter for correct answers
+  let incorrectCount = 0; // Counter for incorrect answers
 
   rememberedAnswers.forEach(rowData => {
     rowData.forEach(cellData => {
@@ -347,22 +349,23 @@ function checkTest() {
       // Сравниваем нормализованные значения
       if (normalizedExpectedValue === normalizedActualValue) {
         cell.style.backgroundColor = 'lightgreen'; // Зелёный цвет для правильного ответа
+        correctCount++; // Increment correct count
       } else {
         cell.style.backgroundColor = 'lightcoral'; // Красный цвет для неправильного ответа
         console.warn(`Несоответствие в ячейке (${rowIndex}, ${cellIndex})`);
+        incorrectCount++; // Increment incorrect count
         isCorrect = false;
       }
     });
   });
 
-  if (isCorrect) {
-    alert("Тест успешно пройден! Все ответы верны.");
-  } else {
-    alert("Тест не пройден. Проверьте свои ответы и попробуйте снова.");
-  }
+  // Alert with the count of correct and incorrect answers
+  alert(`Результаты проверки:\nПравильных ответов: ${correctCount}\nНеправильных ответов: ${incorrectCount}`);
+
 
   console.log("Завершение выполнения checkTest");
 }
+
 
 
 
