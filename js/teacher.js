@@ -513,3 +513,79 @@ function reapplyTableListeners() {
     });
   });
 }
+function importTable() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+
+  input.onchange = event => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      
+      reader.onload = e => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+
+          // Check and adapt imported structure
+          const tableBody = document.querySelector('#dragDropTable tbody');
+          const headerRow = document.querySelector('#headerRow');
+
+          if (!importedData.headers || !Array.isArray(importedData.headers)) {
+            alert("Invalid JSON format: Missing headers array.");
+            return;
+          }
+          if (!importedData.rows || !Array.isArray(importedData.rows)) {
+            alert("Invalid JSON format: Missing rows array.");
+            return;
+          }
+
+          // Populate headers
+          headerRow.innerHTML = '';
+          importedData.headers.forEach(header => {
+            const th = document.createElement('th');
+            th.contentEditable = true;
+            th.innerHTML = header + ' <input type="checkbox" class="givenColumn">';
+            headerRow.appendChild(th);
+          });
+
+          // Populate rows
+          tableBody.innerHTML = '';
+          importedData.rows.forEach(row => {
+            const tr = document.createElement('tr');
+            row.forEach(cellData => {
+              const td = document.createElement('td');
+              td.classList.add('droppable');
+              td.contentEditable = true;
+
+              if (cellData.type === 'latex') {
+                td.dataset.latex = cellData.value;
+                td.innerHTML = `\\(${cellData.value}\\)`;
+              } else {
+                td.innerHTML = cellData.value;
+              }
+              tr.appendChild(td);
+            });
+            tableBody.appendChild(tr);
+          });
+
+          // Reapply necessary event listeners and update droppables
+          reapplyTableListeners();
+          updateDroppables();
+
+          // Render MathJax
+          MathJax.typesetPromise().then(() => {
+            console.log("Imported table rendered successfully.");
+          });
+
+          alert("Table imported successfully!");
+        } catch (error) {
+          console.error("Error importing table:", error);
+          alert("Failed to import table. Ensure the JSON format is correct.");
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+  input.click();
+}
