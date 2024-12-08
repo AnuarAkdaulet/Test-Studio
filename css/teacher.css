@@ -2,7 +2,7 @@
 .table-responsive {
   border-collapse: collapse;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 5px auto;
 }
 
@@ -33,6 +33,7 @@ td {
 /* Droppable target areas */
 .droppable {
   min-height: 40px;
+  text-align: center; /* Center align text/formulas */
   border: 5px dashed #ccc;
 }
 
