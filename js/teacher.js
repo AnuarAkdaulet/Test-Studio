@@ -459,6 +459,7 @@ function loadTest(who) {
           item.addEventListener('dragstart', dragStart);
         });
 
+        // Render MathJax for the loaded content
         MathJax.typesetPromise().then(() => {
           console.log("Test loaded and LaTeX rendered correctly.");
         });
@@ -476,16 +477,31 @@ function loadTest(who) {
 // Reapply event listeners for the loaded table
 function reapplyTableListeners() {
   document.querySelectorAll('#dragDropTable td').forEach(cell => {
+    // Обработчик для фокусировки на ячейке
     cell.addEventListener('focus', (event) => {
-      focusedCell = event.target; // Track the focused cell for row/column deletion
+      focusedCell = event.target; // Запоминаем текущую ячейку
+
+      // Если ячейка содержит LaTeX, показываем его как текст для редактирования
+      if (cell.dataset.latex) {
+        cell.innerText = cell.dataset.latex; // Показать LaTeX в текстовой форме для редактирования
+      }
     });
 
-    // Восстанавливаем исходное значение LaTeX из data-latex, если оно есть
-    if (cell.dataset.latex) {
-      cell.innerHTML = cell.dataset.latex; // Восстанавливаем значение LaTeX
-    }
+    // Обработчик для потери фокуса на ячейке
+    cell.addEventListener('blur', (event) => {
+      let cellContent = event.target.innerText.trim();
+
+      // Проверяем, является ли содержимое LaTeX, и обновляем data-latex
+      if (cellContent.startsWith("\\(") && cellContent.endsWith("\\)")) {
+        event.target.dataset.latex = cellContent; // Обновляем data-latex, если содержимое в формате LaTeX
+      } else {
+        delete event.target.dataset.latex; // Удаляем атрибут data-latex, если это обычный текст
+      }
+
+      // Обновляем визуализацию LaTeX с помощью MathJax
+      MathJax.typesetPromise([event.target]).then(() => {
+        console.log("Содержимое ячейки успешно обновлено и визуализировано.");
+      }).catch(err => console.error("Ошибка визуализации LaTeX после редактирования: ", err));
+    });
   });
 }
-
-
-
