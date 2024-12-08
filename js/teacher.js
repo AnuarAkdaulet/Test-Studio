@@ -4,13 +4,40 @@ let focusedCell = null;
 
 // Add event listener to focus on table cells
 document.addEventListener('DOMContentLoaded', () => {
+  // Обработчик события для фокусировки на ячейке таблицы
   document.querySelectorAll('#dragDropTable td').forEach(cell => {
+    // При фокусировке на ячейке мы запоминаем её как текущую
     cell.addEventListener('focus', (event) => {
-      focusedCell = event.target; // Track the focused cell
+      focusedCell = event.target; // Запоминаем текущую ячейку
+
+      // Если ячейка содержит LaTeX, показываем его как текст для редактирования
+      if (cell.dataset.latex) {
+        cell.innerText = cell.dataset.latex; // Показать LaTeX в текстовой форме для редактирования
+      }
+    });
+
+    // Обработчик события "blur", который срабатывает при потере фокуса
+    cell.addEventListener('blur', (event) => {
+      let cellContent = event.target.innerText.trim();
+
+      // Проверяем, является ли содержимое LaTeX, и обновляем data-latex
+      if (cellContent.startsWith("\\(") && cellContent.endsWith("\\)")) {
+        event.target.dataset.latex = cellContent; // Обновляем data-latex, если содержимое в формате LaTeX
+      } else {
+        delete event.target.dataset.latex; // Удаляем атрибут data-latex, если это обычный текст
+      }
+
+      // Обновляем визуализацию LaTeX с помощью MathJax
+      MathJax.typesetPromise([event.target]).then(() => {
+        console.log("Содержимое ячейки успешно обновлено и визуализировано.");
+      }).catch(err => console.error("Ошибка визуализации LaTeX после редактирования: ", err));
     });
   });
-  updateDroppables(); // Ensure droppables are updated on page load
+
+  // Существующая функция для обновления droppable элементов
+  updateDroppables(); // Обновляем droppable элементы при загрузке страницы
 });
+
 
 // Add a new row to the table
 function addRow() {
