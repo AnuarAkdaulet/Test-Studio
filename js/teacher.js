@@ -450,7 +450,7 @@ function loadTest(who) {
         tableContainer.innerHTML = testData.tableHTML;
         answersContainer.innerHTML = testData.draggableHTML;
 
-        // After loading, we need to reapply event listeners for new table cells
+        // После загрузки нужно снова применить слушатели событий для новых ячеек
         reapplyTableListeners();
         updateDroppables();
 
@@ -459,20 +459,28 @@ function loadTest(who) {
           item.addEventListener('dragstart', dragStart);
         });
 
-        // Render MathJax for the loaded content
+        // Рендеринг MathJax для загруженного содержимого
         MathJax.typesetPromise().then(() => {
-          console.log("Test loaded and LaTeX rendered correctly.");
+          console.log("Тест загружен и LaTeX отрендерен корректно.");
         });
+
+        // Если тест загружает студент, ячейки не должны быть редактируемыми
+        if (who === 'student') {
+          document.querySelectorAll('#dragDropTable td').forEach(cell => {
+            cell.setAttribute('contenteditable', 'false');
+          });
+
+          // Показываем кнопку "Проверить Тест"
+          document.getElementById('testCheckButton').style.display = 'block';
+        }
       };
 			
       reader.readAsText(file);
     }
   };
-  if (who === 'student') {
-    document.getElementById('testCheckButton').style.display = 'block';
-  }
   input.click();
 }
+
 
 // Reapply event listeners for the loaded table
 function reapplyTableListeners() {
